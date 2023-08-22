@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id          String           @id
+  name        String
+  platform    String
+  created_at  DateTime      @default(now())
+  Match       Match[]
+  PlayerEvent PlayerEvent[] @relation("Receiver")
+  VictimEvent PlayerEvent[] @relation("Victim")
+  Team        Team[]
+  Mmrs        MMREntry[]
+
+  @@map("player")
+}
+
+model MMREntry {
+  mmr           Int
+  player_id     String
+  playlist_name String
+  Playlist      Playlist @relation(fields: [playlist_name], references: [name], onDelete: Cascade)
+  Player        Player   @relation(fields: [player_id], references: [id], onDelete: Cascade)
+
+  @@id([player_id, playlist_name])
+  @@map("mmr")
+}
+
+model Playlist {
+  name    String     @id
+  players MMREntry[]
+
+  @@map("playlist")
+}
+
+model Map {
+  name   String  @id
+  imgUrl String
+  Match  Match[]
+
+  @@map("map")
+}
+
+model Match {
+  id          String        @id @default(uuid())
+  playlist    String
+  start_timer String
+  timer       String
+  isOvertime  Boolean       @default(false)
+  map_name    String
+  mvp_id      String?
+  created_at  DateTime      @default(now())
+  Comment     Comment[]
+  map         Map           @relation(fields: [map_name], references: [name])
+  mvp         Player?       @relation(fields: [mvp_id], references: [id], onDelete: SetNull)
+  PlayerEvent PlayerEvent[]
+  Team        Team[]
+
+  @@map("match")
+}
+
+model Team {
+  team_color TeamColor
+  score      Int
+  player_id  String
+  match_id   String
+  match      Match     @relation(fields: [match_id], references: [id], onDelete: Cascade)
+  player     Player    @relation(fields: [player_id], references: [id], onDelete: Cascade)
+
+  @@id([player_id, match_id])
+  @@map("player_team")
+}
+
+model PlayerEvent {
+  id          Int     @id @default(autoincrement())
+  name        String
+  match_timer String
+  player_id   String
+  match_id    String
+  victim_id   String?
+  match       Match   @relation(fields: [match_id], references: [id], onDelete: Cascade)
+  player      Player  @relation("Receiver", fields: [player_id], references: [id], onDelete: Cascade)
+  victim      Player? @relation("Victim", fields: [victim_id], references: [id], onDelete: SetNull)
+
+  @@map("player_event")
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  author     String
+  text       String
+  match_id   String
+  created_at DateTime @default(now())
+  match      Match    @relation(fields: [match_id], references: [id], onDelete: Cascade)
+
+  @@map("comment")
+}
+
+enum TeamColor {
+  BLUE
+  ORANGE
+}

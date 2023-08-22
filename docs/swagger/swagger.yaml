@@ -1,0 +1,221 @@
+openapi: 3.0.0
+info:
+  title: RLBot API Documentation
+  version: 1.0.0
+  description: Documentation for RLBot API endpoints
+
+paths:
+  /matches/{matchId}:
+    get:
+      summary: Get a match by ID
+      tags: [Match]
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the match
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: { matchId: "123", ... }
+
+  /matches/{matchId}/player/{playerId}:
+    get:
+      summary: Get a player from a match
+      tags: [Match]
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the match
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the player
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: { playerId: "456", ... }
+
+  /matches:
+    get:
+      summary: Get all matches
+      tags: [Match]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: [...]
+
+    post:
+      summary: Start a new match
+      tags: [Match]
+      responses:
+        '201':
+          description: Match started successfully
+
+  /matches/{matchId}/overtime:
+    put:
+      summary: Start overtime for a match
+      tags: [Match]
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the match
+      responses:
+        '200':
+          description: Overtime started successfully
+
+  /matches/{matchId}/end:
+    put:
+      summary: End a match
+      tags: [Match]
+      parameters:
+        - name: matchId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the match
+      responses:
+        '200':
+          description: Match ended successfully
+
+  /events:
+    get:
+      summary: Get events for a match and player
+      tags: [Event]
+      parameters:
+        - name: matchId
+          in: query
+          schema:
+            type: string
+          description: ID of the match
+        - name: playerId
+          in: query
+          schema:
+            type: string
+          description: ID of the player
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: [...]
+
+    post:
+      summary: Add a new event
+      tags: [Event]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                matchId:
+                  type: string
+                  description: ID of the match
+                playerId:
+                  type: string
+                  description: ID of the player
+                timestamp:
+                  type: string
+                  description: Timer of match when event occurred
+              required:
+                - matchId
+                - playerId
+                - timestamp
+      responses:
+        '201':
+          description: Event added successfully
+
+  /players/{playerId}:
+    get:
+      summary: Get a player by ID
+      tags: [Player]
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the player
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: { playerId: "789", ... }
+
+    delete:
+      summary: Remove a player
+      tags: [Player]
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the player
+      responses:
+        '204':
+          description: Player removed successfully
+
+  /players:
+    get:
+      summary: Get all players
+      tags: [Player]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example: [...]
+
+    post:
+      summary: Add a new player
+      tags: [Player]
+      responses:
+        '201':
+          description: Player added successfully
+
+  /game/training:
+    put:
+      summary: Enter training mode
+      tags: [Game]
+      responses:
+        '200':
+          description: Entered training mode successfully
+
+  /game/exit:
+    put:
+      summary: Exit game
+      tags: [Game]
+      responses:
+        '200':
+          description: Exited game successfully
+
+tags:
+  - name: Match
+    description: API endpoints related to matches
+  - name: Event
+    description: API endpoints related to events
+  - name: Player
+    description: API endpoints related to players
+  - name: Game
+    description: API endpoints related to the game
