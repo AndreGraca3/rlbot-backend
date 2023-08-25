@@ -1,13 +1,13 @@
-const { getMapImage } = require("../../../rocketleague/api/rlApi");
-
 module.exports = function (
   matchData,
   mapData,
   playlistData,
   playerData,
+  teamData,
   executor
 ) {
   async function addMatch(
+    trCtx,
     mapName,
     playlist,
     blueScore,
@@ -16,68 +16,61 @@ module.exports = function (
     bluePlayers,
     orangePlayers
   ) {
-    return await executor.execute(async (tr) => {
-      const map = await mapData.getMap(mapName);
-      if (!map) {
-        const mapImg = await getMapImage(mapName);
-        await mapData.addMap(mapName, mapImg, tr);
-      }
+    await mapData.getMap(trCtx, mapName);
 
-      await playlistData.upsertPlaylist(playlist, tr);
+    await playlistData.upsertPlaylist(trCtx, playlist);
 
-      const matchId = await matchData.addMatch(
-        playlist,
+    const matchId = await matchData.addMatch(
+      trCtx,
+      blueScore,
+      orangeScore,
+      playlist,
+      startTimer,
+      mapName
+    );
+
+    const promises = [];
+
+    for (const playerInfo of bluePlayers) {
+      const { id: playerId, mmr } = playerInfo;
+      await playerData.getPlayer(trCtx, playerId);
+
+      promises.push(playlistData.upsertMmr(trCtx, playerId, playlist, mmr));
+      const promise = teamData.assignPlayerToTeam(
+        trCtx,
+        playerId,
+        matchId,
         startTimer,
-        mapName,
-        tr
+        "BLUE"
       );
+      promises.push(promise);
+    }
 
-      const promises = [];
+    for (const playerInfo of orangePlayers) {
+      const { id: playerId, mmr } = playerInfo;
+      await playerData.getPlayer(trCtx, playerId);
 
-      for (const playerInfo of bluePlayers) {
-        const { id: playerId, mmr } = playerInfo;
-        await playerData.getPlayer(playerId);
-        promises.push(
-          playlistData.upsertMmr(playerId, playlist, mmr, tr)
-        );
-        const promise = matchData.assignPlayerToTeam(
-          playerId,
-          matchId,
-          blueScore,
-          "BLUE",
-          tr
-        );
-        promises.push(promise);
-      }
+      promises.push(playlistData.upsertMmr(trCtx, playerId, playlist, mmr));
+      const promise = teamData.assignPlayerToTeam(
+        trCtx,
+        playerId,
+        matchId,
+        startTimer,
+        "ORANGE"
+      );
+      promises.push(promise);
+    }
 
-      for (const playerInfo of orangePlayers) {
-        const { id: playerId, mmr } = playerInfo;
-        await playerData.getPlayer(playerId);
-        promises.push(
-          playlistData.upsertMmr(playerId, playlist, mmr, tr)
-        );
-        const promise = matchData.assignPlayerToTeam(
-          playerId,
-          matchId,
-          orangeScore,
-          "ORANGE",
-          tr
-        );
-        promises.push(promise);
-      }
+    await Promise.all(promises);
 
-      await Promise.all(promises);
-
-      return matchId;
-    });
+    return matchId;
   }
 
   return {
-    getMatch: matchData.getMatch,
-    getMatches: matchData.getMatches,
-    addMatch,
-    setMatchMvp: matchData.setMatchMvp,
-    updateMatch: matchData.updateMatch,
-    removeMatch: matchData.removeMatch,
+    getMatch: executor(matchData.getMatch),
+    getMatches: executor(matchData.getMatches),
+    addMatch: executor(addMatch),
+    updateMatch: executor(matchData.updateMatch),
+    removeMatch: executor(matchData.removeMatch),
   };
 };

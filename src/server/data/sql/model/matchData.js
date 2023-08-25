@@ -1,8 +1,7 @@
 const { NotFoundError } = require("../../../errors/errors");
-const dataExecutor = require("../../transactionmanager/dataExecutor");
-const { prismaClient: prisma } = require("../prisma/prismaClient");
+const dataSQLExecutor = require("../../transactionmanager/executors/dataSQLExecutor");
 
-async function getMatch(matchId) {
+async function getMatch(prisma, matchId) {
   const match = await prisma.match.findUnique({
     where: {
       id: matchId,
@@ -13,6 +12,7 @@ async function getMatch(matchId) {
 }
 
 async function getMatches(
+  prisma,
   mapName,
   playlist,
   isOvertime,
@@ -41,49 +41,34 @@ async function getMatches(
   return matches;
 }
 
-async function addMatch(playlist, startTimer, mapName, trCtx) {
-  trCtx = trCtx ?? prisma;
-  const match = await trCtx.match.create({
+async function addMatch(
+  prisma,
+  blueScore,
+  orangeScore,
+  playlist,
+  startTimer,
+  mapName
+) {
+  const match = await prisma.match.create({
     data: {
+      blue_score: blueScore,
+      orange_score: orangeScore,
+      map_name: mapName,
       playlist,
       start_timer: startTimer,
       timer: startTimer,
-      map_name: mapName,
     },
   });
   return match.id;
 }
 
-async function assignPlayerToTeam(playerId, matchId, score, teamColor, trCtx) {
-  trCtx = trCtx ?? prisma;
-  await trCtx.team.upsert({
-    create: {
-      player_id: playerId,
-      match_id: matchId,
-      score,
-      team_color: teamColor,
-    },
-    update: {
-      score,
-      team_color: teamColor,
-    },
-    where: {
-      player_id_match_id: {
-        player_id: playerId,
-        match_id: matchId,
-      },
-    },
-  });
-}
-
-async function updateMatch(matchId, timer, mvpId, isOvertime, trCtx) {
-  trCtx = trCtx ?? prisma;
+async function updateMatch(prisma, matchId, timer, mvpId, isOvertime) {
   const data = {};
   if (timer) data.timer = timer;
   if (mvpId) data.mvp_id = mvpId;
   if (isOvertime !== undefined) data.isOvertime = isOvertime;
 
-  await trCtx.match.update({
+  await prisma.match.update({
     where: {
       id: matchId,
     },
@@ -91,9 +76,8 @@ async function updateMatch(matchId, timer, mvpId, isOvertime, trCtx) {
   });
 }
 
-async function removeMatch(matchId, trCtx) {
-  trCtx = trCtx ?? prisma;
-  await trCtx.match.delete({
+async function removeMatch(prisma, matchId) {
+  await prisma.match.delete({
     where: {
       id: matchId,
     },
@@ -101,10 +85,9 @@ async function removeMatch(matchId, trCtx) {
 }
 
 module.exports = {
-  getMatch,
-  getMatches,
-  addMatch,
-  assignPlayerToTeam,
-  updateMatch,
-  removeMatch,
+  getMatch: dataSQLExecutor(getMatch),
+  getMatches: dataSQLExecutor(getMatches),
+  addMatch: dataSQLExecutor(addMatch),
+  updateMatch: dataSQLExecutor(updateMatch),
+  removeMatch: dataSQLExecutor(removeMatch),
 };

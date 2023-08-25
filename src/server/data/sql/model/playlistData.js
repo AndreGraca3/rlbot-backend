@@ -1,25 +1,23 @@
-const { prismaClient: prisma } = require("../prisma/prismaClient");
+const dataExecutor = require("../../transactionmanager/executors/dataSQLExecutor")
 
-async function upsertPlaylist(name, trCtx) {
-  trCtx = trCtx ?? prisma;
+async function upsertPlaylist(prisma, name) {
   const data = {
     name,
   };
-  return await trCtx.playlist.upsert({
+  return await prisma.playlist.upsert({
     create: data,
     update: data,
     where: data,
   });
 }
 
-async function upsertMmr(playerId, playlist, mmr, trCtx) {
-  trCtx = trCtx ?? prisma;
+async function upsertMmr(prisma, playerId, playlist, mmr) {
   const data = {
     player_id: playerId,
     playlist_name: playlist,
     mmr,
   };
-  await trCtx.mMREntry.upsert({
+  await prisma.mMREntry.upsert({
     create: data,
     update: data,
     where: {
@@ -32,6 +30,6 @@ async function upsertMmr(playerId, playlist, mmr, trCtx) {
 }
 
 module.exports = {
-  upsertPlaylist,
-  upsertMmr,
+  upsertPlaylist: dataExecutor(upsertPlaylist),
+  upsertMmr: dataExecutor(upsertMmr),
 };

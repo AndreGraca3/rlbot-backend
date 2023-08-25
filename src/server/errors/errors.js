@@ -16,7 +16,7 @@ class NotFoundError extends ApplicationError {
 
 class IllegalArgumentError extends ApplicationError {
   constructor(obj) {
-    super(`${obj} is missing/not valid.`);
+    super(`${obj} is missing/not valid/wrong type.`);
     this.name = "IllegalArgumentError";
     this.symbol = "❌";
   }

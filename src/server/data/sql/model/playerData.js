@@ -1,7 +1,7 @@
+const dataExecutor = require("../../transactionmanager/executors/dataSQLExecutor")
 const { NotFoundError } = require("../../../errors/errors");
-const { prismaClient: prisma } = require("../prisma/prismaClient");
 
-async function getPlayer(playerId) {
+async function getPlayer(prisma, playerId) {
   const player = await prisma.player.findUnique({
     where: {
       id: playerId,
@@ -11,7 +11,7 @@ async function getPlayer(playerId) {
   return player;
 }
 
-async function getPlayers(name, platform, createdAfter) {
+async function getPlayers(prisma, name, platform, createdAfter) {
   const filters = {};
   if (name) filters.name = name;
   if (platform) filters.platform = platform;
@@ -22,14 +22,13 @@ async function getPlayers(name, platform, createdAfter) {
   });
 }
 
-async function upsertPlayer(playerId, name, platform, trCtx) {
-  trCtx = trCtx ?? prisma
+async function upsertPlayer(prisma, playerId, name, platform) {
   const data = {
     id: playerId,
     name,
     platform,
   };
-  await trCtx.player.upsert({
+  await prisma.player.upsert({
     where: {
       id: playerId,
     },
@@ -39,7 +38,7 @@ async function upsertPlayer(playerId, name, platform, trCtx) {
   return playerId;
 }
 
-async function removePlayer(playerId) {
+async function removePlayer(prisma, playerId) {
   const player = await prisma.player.delete({
     where: {
       id: playerId,
@@ -49,8 +48,8 @@ async function removePlayer(playerId) {
 }
 
 module.exports = {
-  getPlayer,
-  getPlayers,
-  upsertPlayer,
-  removePlayer
+  getPlayer: dataExecutor(getPlayer),
+  getPlayers: dataExecutor(getPlayers),
+  upsertPlayer: dataExecutor(upsertPlayer),
+  removePlayer: dataExecutor(removePlayer)
 };

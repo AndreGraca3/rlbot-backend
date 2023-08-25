@@ -1,15 +1,18 @@
-const dataExecutor = require("../../transactionmanager/dataExecutor");
-const { prismaClient: prisma } = require("../prisma/prismaClient");
+const { NotFoundError } = require("../../../errors/errors");
+const { getMapImage } = require("../../../../rocketleague/api/rlApi");
+const dataSQLExecutor = require("../../transactionmanager/executors/dataSQLExecutor");
 
-async function getMap(name) {
-  return await prisma.map.findUnique({
+async function getMap(prisma, name) {
+  const map = await prisma.map.findUnique({
     where: {
       name,
     },
   });
+  if (!map) throw new NotFoundError(`Map ${name}`);
+  return map;
 }
 
-async function getRandomMap() {
+async function getRandomMap(prisma) {
   const totalMaps = await prisma.map.count();
 
   if (totalMaps === 0) {
@@ -23,18 +26,17 @@ async function getRandomMap() {
   return randomMap.name;
 }
 
-async function addMap(name, imgUrl, trCtx) {
-  trCtx = trCtx ?? prisma;
-  return await trCtx.map.create({
+async function addMap(prisma, name) {
+  return await prisma.map.create({
     data: {
       name,
-      imgUrl,
+      imgUrl: await getMapImage(name),
     },
   });
 }
 
 module.exports = {
-  getMap,
-  getRandomMap,
-  addMap,
+  getMap: dataSQLExecutor(getMap),
+  getRandomMap: dataSQLExecutor(getRandomMap),
+  addMap: dataSQLExecutor(addMap),
 };

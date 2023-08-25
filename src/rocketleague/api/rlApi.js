@@ -1,27 +1,49 @@
-const googleAPI = require('googleapis');
-const { GOOGLE_API_KEY, SEARCH_ENGINE_ID } = require('../../config/config.js');
+const googleAPI = require("googleapis");
+const { GOOGLE_API_KEY, SEARCH_ENGINE_ID } = require("../../config/config.js");
 
 const customSearch = googleAPI.google.customsearch("v1");
 
 async function getMapImage(mapName) {
-  console.log("Searching new rl map img")
-  return "https://static.wikia.nocookie.net/rocketleague/images/e/e1/Champions_Field_arena_preview.png" // for tests
-  let res = {};
+  if (!mapName || typeof mapName !== "string") {
+    throw new Error("Invalid map name");
+  }
+
+  console.log("Searching new map image for " + mapName);
+
   try {
-    res = await customSearch.cse.list({
+    const res = await customSearch.cse.list({
       auth: GOOGLE_API_KEY,
       cx: SEARCH_ENGINE_ID,
       searchType: "image",
       q: `${mapName} rocket league map`,
       num: 1,
     });
-    const mapImage = res.data.items[0].link
-    return mapImage.substring(0, (mapImage.indexOf('.png') || mapImage.indexOf('.jpg')) + 4);
+
+    if (res.data.items && res.data.items.length > 0) {
+      const mapImage = res.data.items[0].link;
+      const imageExtensions = [".png", ".jpg"];
+
+      let idx = -1;
+      for (const ext of imageExtensions) {
+        const extIdx = mapImage.lastIndexOf(ext);
+        if (extIdx > idx) {
+          idx = extIdx;
+        }
+      }
+
+      if (idx !== -1) {
+        return mapImage.substring(0, idx + 4);
+      } else {
+        throw new Error("Invalid image link");
+      }
+    } else {
+      throw new Error("No image found");
+    }
   } catch (err) {
-    console.log(`Error setting new map image: ${err}`);
+    console.error(`Error setting new map image: ${err}`);
   }
 }
 
 module.exports = {
-  getMapImage
+  getMapImage,
 };

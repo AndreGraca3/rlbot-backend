@@ -1,7 +1,6 @@
-const dataExecutor = require("../../transactionmanager/dataExecutor");
-const { prismaClient: prisma } = require("../prisma/prismaClient");
+const dataExecutor = require("../../transactionmanager/executors/dataSQLExecutor");
 
-async function getEvents(playerId, matchId, type) {
+async function getEvents(prisma, playerId, matchId, type) {
   let whereCondition = {};
 
   if (playerId) {
@@ -21,7 +20,7 @@ async function getEvents(playerId, matchId, type) {
   });
 }
 
-async function addEvent(playerId, matchId, eventType, matchTimer, victimId) {
+async function addEvent(prisma, playerId, matchId, eventType, matchTimer, victimId) {
   const event = await prisma.playerEvent.create({
     data: {
       name: eventType,
@@ -35,6 +34,6 @@ async function addEvent(playerId, matchId, eventType, matchTimer, victimId) {
 }
 
 module.exports = {
-  getEvents,
-  addEvent,
+  getEvents: dataExecutor(getEvents),
+  addEvent: dataExecutor(addEvent),
 };

@@ -8,14 +8,14 @@ datasource db {
 }
 
 model Player {
-  id          String           @id
+  id          String        @id
   name        String
   platform    String
   created_at  DateTime      @default(now())
   Match       Match[]
   PlayerEvent PlayerEvent[] @relation("Receiver")
   VictimEvent PlayerEvent[] @relation("Victim")
-  Team        Team[]
+  Team        PlayerTeam[]
   Mmrs        MMREntry[]
 
   @@map("player")
@@ -40,40 +40,44 @@ model Playlist {
 }
 
 model Map {
-  name   String  @id
-  imgUrl String
-  Match  Match[]
+  name       String   @id
+  imgUrl     String
+  created_at DateTime @default(now())
+  Match      Match[]
 
   @@map("map")
 }
 
 model Match {
-  id          String        @id @default(uuid())
-  playlist    String
-  start_timer String
-  timer       String
-  isOvertime  Boolean       @default(false)
-  map_name    String
-  mvp_id      String?
-  created_at  DateTime      @default(now())
-  Comment     Comment[]
-  map         Map           @relation(fields: [map_name], references: [name])
-  mvp         Player?       @relation(fields: [mvp_id], references: [id], onDelete: SetNull)
-  PlayerEvent PlayerEvent[]
-  Team        Team[]
+  id           String        @id @default(uuid())
+  playlist     String
+  start_timer  String
+  timer        String
+  blue_score   Int
+  orange_score Int
+  isOvertime   Boolean       @default(false)
+  map_name     String
+  mvp_id       String?
+  created_at   DateTime      @default(now())
+  Comment      Comment[]
+  map          Map           @relation(fields: [map_name], references: [name])
+  mvp          Player?       @relation(fields: [mvp_id], references: [id], onDelete: SetNull)
+  PlayerEvent  PlayerEvent[]
+  Team         PlayerTeam[]
 
   @@map("match")
 }
 
-model Team {
-  team_color TeamColor
-  score      Int
-  player_id  String
-  match_id   String
-  match      Match     @relation(fields: [match_id], references: [id], onDelete: Cascade)
-  player     Player    @relation(fields: [player_id], references: [id], onDelete: Cascade)
+model PlayerTeam {
+  team        Team
+  player_id   String
+  match_id    String
+  match_timer String
+  created_at  DateTime @default(now())
+  match       Match    @relation(fields: [match_id], references: [id], onDelete: Cascade)
+  player      Player   @relation(fields: [player_id], references: [id], onDelete: Cascade)
 
-  @@id([player_id, match_id])
+  @@id([player_id, match_id, created_at])
   @@map("player_team")
 }
 
@@ -102,7 +106,8 @@ model Comment {
   @@map("comment")
 }
 
-enum TeamColor {
+enum Team {
   BLUE
   ORANGE
+  SPECTATOR
 }

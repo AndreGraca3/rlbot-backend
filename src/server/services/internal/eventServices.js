@@ -1,12 +1,9 @@
-module.exports = function (eventData, playerData, matchData, executor) {
-  async function getEvents(playerId, matchId, type) {
-    return await eventData.getEvents(playerId, matchId, type);
-  }
-
-  async function addEvent(playerId, matchId, eventType, matchTimer, victimId) {
-    await playerData.getPlayer(playerId)
-    await matchData.getMatch(matchId)
+module.exports = function (eventData, playerData, matchData, executor) { 
+  async function addEvent(trCtx, playerId, matchId, eventType, matchTimer, victimId) {
+    await playerData.getPlayer(trCtx, playerId);
+    await matchData.getMatch(trCtx, matchId);
     return await eventData.addEvent(
+      trCtx,
       playerId,
       matchId,
       eventType,
@@ -16,7 +13,7 @@ module.exports = function (eventData, playerData, matchData, executor) {
   }
 
   return {
-    getEvents,
-    addEvent,
+    getEvents: executor(eventData.getEvents),
+    addEvent: executor(addEvent),
   };
 };
