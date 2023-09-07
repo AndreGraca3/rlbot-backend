@@ -8,8 +8,16 @@ module.exports = function (services) {
   }
 
   async function getPlayers(req, rsp) {
-    const { name, platform, createdAfter } = req.query;
-    const players = await services.getPlayers(name, platform, createdAfter);
+    let { name, platform, createdAfter, skip, limit } = req.query;
+    if (skip) skip = parseInt(skip);
+    if (limit) limit = parseInt(limit);
+    const players = await services.getPlayers(
+      name,
+      platform,
+      createdAfter,
+      skip,
+      limit
+    );
     rsp.json(players);
   }
 
@@ -27,7 +35,7 @@ module.exports = function (services) {
       playerId,
       ...validateBody(req.body, "playlist", "mmr")
     );
-    rsp.json({message: "Player's mmr updated successfully."})
+    rsp.json({ message: "Player's mmr updated successfully." });
   }
 
   async function removePlayer(req, rsp) {

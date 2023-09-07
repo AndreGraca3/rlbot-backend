@@ -12,6 +12,7 @@ model Player {
   name        String
   platform    String
   created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
   Match       Match[]
   PlayerEvent PlayerEvent[] @relation("Receiver")
   VictimEvent PlayerEvent[] @relation("Victim")
