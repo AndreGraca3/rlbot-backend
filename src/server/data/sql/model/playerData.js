@@ -1,6 +1,5 @@
 const dataExecutor = require("../../transactionmanager/executors/dataSQLExecutor");
 const { NotFoundError } = require("../../../errors/errors");
-const { prismaClient } = require("../prisma/prismaClient");
 
 async function getPlayer(prisma, playerId) {
   const player = await prisma.player.findUnique({
@@ -18,7 +17,7 @@ async function getPlayers(prisma, name, platform, createdAfter, skip, limit) {
   if (platform) filters.platform = platform;
   if (createdAfter) filters.created_at = { gte: new Date(createdAfter) };
 
-  const players = await prismaClient.player.findMany({
+  const players = await prisma.player.findMany({
     where: filters,
     skip,
     take: limit,
