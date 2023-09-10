@@ -15,7 +15,7 @@ async function getPlayers(prisma, name, platform, createdAfter, skip, limit) {
   const filters = {};
   if (name) filters.name = { contains: name, mode: "insensitive" };
   if (platform) filters.platform = platform;
-  if (createdAfter) filters.created_at = { gte: new Date(createdAfter) };
+  if (createdAfter) filters.updated_at = { gte: new Date(createdAfter) };
 
   const players = await prisma.player.findMany({
     where: filters,

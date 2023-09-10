@@ -1,4 +1,4 @@
-const { validateBody } = require("../validators");
+const { validateBody, transformQueryToDate } = require("../validators");
 
 module.exports = function (services) {
   async function getMatch(req, rsp) {
@@ -7,14 +7,28 @@ module.exports = function (services) {
   }
 
   async function getMatches(req, rsp) {
-    const { mapName, playlist, isOvertime, createdAfter, createdBefore } =
-      req.query;
+    let {
+      mapName,
+      playlist,
+      isOvertime,
+      createdAfter,
+      createdBefore,
+      skip,
+      limit,
+    } = req.query;
+    if (skip) skip = parseInt(skip);
+    if (limit) limit = parseInt(limit);
+    if (createdAfter) createdAfter = transformQueryToDate(createdAfter);
+    if (createdBefore) createdBefore = transformQueryToDate(createdBefore);
+
     const matches = await services.getMatches(
       mapName,
       playlist,
       isOvertime ? !!isOvertime : undefined,
       createdAfter,
-      createdBefore
+      createdBefore,
+      skip,
+      limit
     );
     rsp.json(matches);
   }
@@ -37,8 +51,8 @@ module.exports = function (services) {
 
   async function updateMatch(req, rsp) {
     const { matchId } = req.params;
-    const { timer, mvpId, isOvertime } = req.body;  // optional
-    await services.updateMatch(matchId, timer, mvpId, isOvertime);
+    const { timer, mvpId, isOvertime, state } = req.body; // optional
+    await services.updateMatch(matchId, timer, mvpId, isOvertime, state);
     rsp.json({ message: "Match updated successfully." });
   }
 

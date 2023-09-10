@@ -17,7 +17,9 @@ async function getMatches(
   playlist,
   isOvertime,
   createdAfter,
-  createdBefore
+  createdBefore,
+  skip,
+  limit
 ) {
   const filters = {};
 
@@ -33,12 +35,16 @@ async function getMatches(
 
   const matches = await prisma.match.findMany({
     where: filters,
+    skip,
+    take: limit,
     orderBy: {
       created_at: "desc",
     },
   });
 
-  return matches;
+  const total = await prisma.match.count({ where: filters });
+
+  return { results: matches, total };
 }
 
 async function addMatch(
@@ -62,11 +68,12 @@ async function addMatch(
   return match.id;
 }
 
-async function updateMatch(prisma, matchId, timer, mvpId, isOvertime) {
+async function updateMatch(prisma, matchId, timer, mvpId, isOvertime, state) {
   const data = {};
   if (timer) data.timer = timer;
   if (mvpId) data.mvp_id = mvpId;
   if (isOvertime !== undefined) data.isOvertime = isOvertime;
+  if (state) data.state = state;
 
   await prisma.match.update({
     where: {

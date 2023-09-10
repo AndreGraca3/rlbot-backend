@@ -1,4 +1,4 @@
-const { validateBody } = require("../validators");
+const { validateBody, transformQueryToDate } = require("../validators");
 
 module.exports = function (services) {
   async function getPlayer(req, rsp) {
@@ -11,6 +11,7 @@ module.exports = function (services) {
     let { name, platform, createdAfter, skip, limit } = req.query;
     if (skip) skip = parseInt(skip);
     if (limit) limit = parseInt(limit);
+    if(createdAfter) createdAfter = transformQueryToDate(createdAfter)
     const players = await services.getPlayers(
       name,
       platform,

@@ -49,6 +49,12 @@ model Map {
   @@map("map")
 }
 
+enum MatchState {
+  STARTED
+  ENDED
+  FORFEIT
+}
+
 model Match {
   id           String        @id @default(uuid())
   playlist     String
@@ -58,6 +64,7 @@ model Match {
   orange_score Int
   isOvertime   Boolean       @default(false)
   map_name     String
+  state        MatchState    @default(STARTED)
   mvp_id       String?
   created_at   DateTime      @default(now())
   Comment      Comment[]
@@ -67,6 +74,12 @@ model Match {
   Team         PlayerTeam[]
 
   @@map("match")
+}
+
+enum Team {
+  BLUE
+  ORANGE
+  SPECTATOR
 }
 
 model PlayerTeam {
@@ -105,10 +118,4 @@ model Comment {
   match      Match    @relation(fields: [match_id], references: [id], onDelete: Cascade)
 
   @@map("comment")
-}
-
-enum Team {
-  BLUE
-  ORANGE
-  SPECTATOR
 }
