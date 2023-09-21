@@ -4,8 +4,10 @@ const handleRequest = require("../controllers/handleRequest");
 module.exports = function (controller) {
   const router = express.Router();
 
+  router.get("", handleRequest(controller.getMaps));
+
   router.get("/:mapName", handleRequest(controller.getMap));
-  
+
   router.put("/:mapName", handleRequest(controller.addMap));
 
   return router;

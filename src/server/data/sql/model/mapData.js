@@ -2,6 +2,10 @@ const { NotFoundError } = require("../../../errors/errors");
 const { getMapImage } = require("../../../../rocketleague/api/rlApi");
 const dataSQLExecutor = require("../../transactionmanager/executors/dataSQLExecutor");
 
+async function getMaps(prisma) {
+  return await prisma.map.findMany({ select: { name: true } });
+}
+
 async function getMap(prisma, name) {
   const map = await prisma.map.findUnique({
     where: {
@@ -36,6 +40,7 @@ async function addMap(prisma, name) {
 }
 
 module.exports = {
+  getMaps: dataSQLExecutor(getMaps),
   getMap: dataSQLExecutor(getMap),
   getRandomMap: dataSQLExecutor(getRandomMap),
   addMap: dataSQLExecutor(addMap),

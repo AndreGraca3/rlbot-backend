@@ -9,6 +9,7 @@ module.exports = function (mapData, executor) {
   }
 
   return {
+    getMaps: executor(mapData.getMaps),
     getMap: executor(mapData.getMap),
     addMap: executor(addMap),
   };

@@ -1,6 +1,11 @@
 const { validateBody } = require("../validators");
 
 module.exports = function (services) {
+  async function getMaps(req, rsp) {
+    const maps = await services.getMaps();
+    rsp.json(maps);
+  }
+
   async function getMap(req, rsp) {
     const { mapName } = req.params;
     const map = await services.getMap(mapName);
@@ -14,6 +19,7 @@ module.exports = function (services) {
   }
 
   return {
+    getMaps,
     getMap,
     addMap,
   };

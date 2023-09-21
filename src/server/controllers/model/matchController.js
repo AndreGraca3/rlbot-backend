@@ -18,8 +18,6 @@ module.exports = function (services) {
     } = req.query;
     if (skip) skip = parseInt(skip);
     if (limit) limit = parseInt(limit);
-    if (createdAfter) createdAfter = transformQueryToDate(createdAfter);
-    if (createdBefore) createdBefore = transformQueryToDate(createdBefore);
 
     const matches = await services.getMatches(
       mapName,
